@@ -6,6 +6,10 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { queryClient } from "./lib/queryClient";
 import AuthPage from "@/pages/auth";
 import DashboardPage from "@/pages/dashboard";
+import SalesPage from "@/pages/sales";
+import InventoryPage from "@/pages/inventory";
+import UsersPage from "@/pages/users";
+import ReportsPage from "@/pages/reports";
 import ProfilePage from "@/pages/profile";
 import NotFound from "@/pages/not-found";
 
@@ -14,6 +18,10 @@ function Router() {
     <Switch>
       <Route path="/" component={AuthPage} />
       <Route path="/dashboard" component={DashboardPage} />
+      <Route path="/sales" component={SalesPage} />
+      <Route path="/inventory" component={InventoryPage} />
+      <Route path="/users" component={UsersPage} />
+      <Route path="/reports" component={ReportsPage} />
       <Route path="/profile" component={ProfilePage} />
       <Route component={NotFound} />
     </Switch>

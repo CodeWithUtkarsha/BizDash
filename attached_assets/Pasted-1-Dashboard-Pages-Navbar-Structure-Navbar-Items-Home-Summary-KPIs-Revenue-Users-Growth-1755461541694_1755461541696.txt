@@ -1,0 +1,194 @@
+1. Dashboard Pages & Navbar Structure
+Navbar Items:
+
+Home
+
+Summary KPIs (Revenue, Users, Growth %)
+
+Quick-access charts (Top metrics)
+
+Sales Analytics
+
+Time-series charts (Daily/Monthly sales)
+
+Geographic heatmap (Sales by region)
+
+Product performance tables
+
+Inventory
+
+Stock levels dashboard
+
+Low-stock alerts
+
+Supplier lead time analysis
+
+User Insights
+
+User growth trends
+
+Activity logs
+
+Retention funnel
+
+Reports
+
+Exportable PDF/CSV
+
+Scheduled report generator (UI mock)
+
+Profile
+
+Account settings
+
+Profile image upload (mock)
+
+Theme toggle (dark/light)
+
+2. Dashboard Component Breakdown
+A. Home Page
+Hero Section:
+
+Greeting ("Welcome back, [User]!")
+
+Date/Time widget
+
+KPI Cards (4-6):
+
+jsx
+<KPICard 
+  title="Total Revenue" 
+  value="$24K" 
+  change="+12%" 
+  icon={<TrendingUpIcon />} 
+/>
+Mini Charts:
+
+Sparkline (Revenue last 7 days)
+
+Donut chart (Sales by category)
+
+B. Sales Analytics Page
+Filters:
+
+Date range picker
+
+Product category dropdown
+
+Main Charts:
+
+Line chart: Revenue over time
+
+Stacked bar chart: Sales by product + region
+
+Data Table: Raw sales data (paginated)
+
+C. Inventory Page
+Status Cards:
+
+"Total SKUs", "Out-of-Stock", "Overstocked"
+
+Interactive Table:
+
+Sortable columns (Stock Qty, Reorder Level)
+
+Color-coded rows (red = low stock)
+
+D. User Insights Page
+Engagement Metrics:
+
+MAU/DAU charts
+
+Session duration heatmap
+
+User Segments:
+
+Pie chart (New vs. Returning)
+
+E. Reports Page
+Report Builder:
+
+Drag-and-drop metric selector
+
+Preview panel
+
+History:
+
+List of past exports (mock)
+
+F. Profile Page
+Account Section:
+
+Editable fields (Name, Email)
+
+Password reset button (modal)
+
+Avatar Upload:
+
+jsx
+<AvatarEditor 
+  image={preview} 
+  onCrop={handleCrop}
+/>
+3. Sample Navbar Code
+jsx
+const navItems = [
+  { name: "Home", icon: <HomeIcon />, path: "/" },
+  { name: "Sales", icon: <SalesIcon />, path: "/sales" },
+  { name: "Inventory", icon: <InventoryIcon />, path: "/inventory" },
+  { name: "Users", icon: <UsersIcon />, path: "/users" },
+  { name: "Reports", icon: <ReportIcon />, path: "/reports" },
+];
+
+<nav className="bg-darkBg">
+  {navItems.map((item) => (
+    <Link 
+      key={item.name} 
+      to={item.path}
+      className="hover:bg-primary/20"
+    >
+      {item.icon}
+      <span>{item.name}</span>
+    </Link>
+  ))}
+</nav>
+4. Mock Data Structure
+json
+// mockData.json
+{
+  "sales": [
+    { "id": 1, "date": "2025-08-01", "product": "Laptop", "revenue": 1200 },
+    ...
+  ],
+  "inventory": [
+    { "id": 1, "name": "Laptop", "stock": 45, "threshold": 10 },
+    ...
+  ]
+}
+5. UI/UX Enhancements
+Theming:
+
+CSS variables for colors
+
+prefers-color-scheme detection
+
+Loading States:
+
+Skeleton screens for charts/tables
+
+Empty States:
+
+Illustration + "No data" message
+
+6. Tools to Use
+Purpose	Recommended Libraries
+Charts	Recharts, Chart.js
+Tables	TanStack Table (React-Table)
+Forms	Formik + Yup
+Animations	Framer Motion
+Icons	Lucide React / Material Icons
+This structure ensures recruiter-ready polish with:
+✅ Professional navigation
+✅ Data-rich pages
+✅ Pixel-perfect UI
+✅ Mock backend readiness
