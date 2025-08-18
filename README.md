@@ -1,15 +1,22 @@
 # 📊 BizDash - Business Analytics Dashboard
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-View%20App-brightgreen?style=for-the-badge&logo=vercel)](https://biz-dash.vercel.app/)
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-blue?style=for-the-badge&logo=github)](https://github.com/CodeWithUtkarsha/BizDash)
+
 A modern, responsive business analytics dashboard built with React, TypeScript, and Tailwind CSS. Features real-time data visualization, user management, and comprehensive business metrics tracking.
 
 ## 🌟 Live Demo
 
-🔗 **[View Live Demo](http://localhost:5173)** _(Local Development)_
+🔗 **[View Live Demo](https://biz-dash.vercel.app/)** _(Production Deployment)_
+
+🛠️ **[Local Development](http://localhost:5173)** _(Run locally)_
 
 > **Demo Credentials:**
 >
 > - **Email:** `admin@bizdash.com`
 > - **Password:** `admin123`
+>
+> **Note:** Backend features (login, data loading) are currently unavailable in the live demo as only the frontend is deployed. For full functionality, run both frontend and backend locally.
 
 ## ✨ Features
 
