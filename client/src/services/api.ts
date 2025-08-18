@@ -1,5 +1,5 @@
 // API configuration and base service
-const API_BASE_URL = 'http://127.0.0.1:3001/api';
+const API_BASE_URL = 'https://render-backend-bizdash.onrender.com/api';
 
 interface ApiResponse<T> {
   data?: T;
