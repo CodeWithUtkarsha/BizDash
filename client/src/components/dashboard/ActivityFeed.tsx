@@ -2,18 +2,40 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CursorGlow } from '@/components/ui/background-effects';
-import { ActivityItem, generateRandomActivity, mockActivities } from '@/data/mockData';
+import { ActivityItem } from '@/data/mockData';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { dashboardApi } from '@/services/api';
 
 export const ActivityFeed = () => {
-  const [activities, setActivities] = useState<ActivityItem[]>(mockActivities);
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate real-time updates
-    const interval = setInterval(() => {
-      const newActivity = generateRandomActivity();
-      setActivities(prev => [newActivity, ...prev.slice(0, 9)]); // Keep max 10 activities
-    }, 3000);
+    // Load initial activity data
+    const loadActivities = async () => {
+      try {
+        const response = await dashboardApi.getActivity();
+        const transformedActivities: ActivityItem[] = response.activities.map(activity => ({
+          id: activity.id,
+          user: activity.user,
+          action: activity.action,
+          amount: activity.amount ? `$${activity.amount.toLocaleString()}` : '',
+          timestamp: new Date(activity.time).toLocaleTimeString(),
+          type: activity.type as ActivityItem['type']
+        }));
+        setActivities(transformedActivities);
+      } catch (error) {
+        console.error('Failed to load activities:', error);
+        setActivities([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadActivities();
+
+    // Set up periodic refresh every 30 seconds
+    const interval = setInterval(loadActivities, 30000);
 
     return () => clearInterval(interval);
   }, []);
@@ -66,45 +88,55 @@ export const ActivityFeed = () => {
             data-testid="activity-feed"
             className="space-y-4 max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent"
           >
-            <AnimatePresence>
-              {activities.map((activity, index) => (
-                <motion.div
-                  key={activity.id}
-                  data-testid={`activity-item-${activity.id}`}
-                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                  className="flex items-center space-x-4 p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
-                >
-                  <Avatar className="w-10 h-10">
-                    <AvatarFallback className={`bg-gradient-to-r ${getAvatarColor(activity.type)} text-white font-medium text-sm`}>
-                      {getInitials(activity.user)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p 
-                      data-testid={`text-activity-description-${activity.id}`}
-                      className="text-white text-sm"
-                    >
-                      <span className="font-medium">{activity.user}</span> {activity.action}
-                    </p>
-                    <p 
-                      data-testid={`text-activity-timestamp-${activity.id}`}
-                      className="text-gray-400 text-xs"
-                    >
-                      {activity.timestamp}
-                    </p>
-                  </div>
-                  <div 
-                    data-testid={`text-activity-amount-${activity.id}`}
-                    className={`font-medium text-sm ${getAmountColor(activity.type)} flex-shrink-0`}
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="text-gray-400">Loading activities...</div>
+              </div>
+            ) : activities.length === 0 ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="text-gray-400">No recent activity</div>
+              </div>
+            ) : (
+              <AnimatePresence>
+                {activities.map((activity, index) => (
+                  <motion.div
+                    key={activity.id}
+                    data-testid={`activity-item-${activity.id}`}
+                    initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                    className="flex items-center space-x-4 p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
                   >
-                    {activity.amount}
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
+                    <Avatar className="w-10 h-10">
+                      <AvatarFallback className={`bg-gradient-to-r ${getAvatarColor(activity.type)} text-white font-medium text-sm`}>
+                        {getInitials(activity.user)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p 
+                        data-testid={`text-activity-description-${activity.id}`}
+                        className="text-white text-sm"
+                      >
+                        <span className="font-medium">{activity.user}</span> {activity.action}
+                      </p>
+                      <p 
+                        data-testid={`text-activity-timestamp-${activity.id}`}
+                        className="text-gray-400 text-xs"
+                      >
+                        {activity.timestamp}
+                      </p>
+                    </div>
+                    <div 
+                      data-testid={`text-activity-amount-${activity.id}`}
+                      className={`font-medium text-sm ${getAmountColor(activity.type)} flex-shrink-0`}
+                    >
+                      {activity.amount}
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            )}
           </div>
         </CardContent>
       </Card>

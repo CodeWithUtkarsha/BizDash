@@ -1,21 +1,25 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { authApi } from '../services/api';
 
 interface User {
   id: string;
   name: string;
   email: string;
   role: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  bio: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  bio?: string;
   avatar?: string;
+  department?: string;
+  lastLogin?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string, department?: string) => Promise<void>;
   logout: () => void;
   updateProfile: (userData: Partial<User>) => void;
 }
@@ -41,43 +45,95 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   useEffect(() => {
     // Check for existing auth on app start
     const token = localStorage.getItem('auth_token');
-    const userData = localStorage.getItem('user_data');
     
-    if (token && userData) {
-      try {
-        const parsedUser = JSON.parse(userData);
-        setUser(parsedUser);
-        setIsAuthenticated(true);
-      } catch (error) {
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('user_data');
-      }
+    if (token) {
+      // Verify token with backend
+      authApi.getProfile()
+        .then((response) => {
+          const userData = response.user;
+          setUser({
+            id: userData.id,
+            name: userData.name,
+            email: userData.email,
+            role: userData.role,
+            department: userData.department,
+            lastLogin: userData.lastLogin,
+            // Set default values for missing fields
+            firstName: userData.name.split(' ')[0] || '',
+            lastName: userData.name.split(' ')[1] || '',
+            phone: '',
+            bio: `${userData.role} at ${userData.department || 'BizDash'}`
+          });
+          setIsAuthenticated(true);
+        })
+        .catch((error) => {
+          console.error('Token verification failed:', error);
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('user_data');
+        });
     }
   }, []);
 
   const login = async (email: string, password: string): Promise<void> => {
-    // Mock authentication - in real app, this would be an API call
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const mockUser: User = {
-          id: 'user-1',
-          name: 'John Doe',
-          email: email,
-          role: 'Administrator',
-          firstName: 'John',
-          lastName: 'Doe',
-          phone: '+1 (555) 123-4567',
-          bio: 'Senior Analytics Manager with 8+ years of experience in business intelligence and data visualization. Passionate about transforming complex data into actionable insights.',
-        };
-        
-        localStorage.setItem('auth_token', 'fake_jwt_token');
-        localStorage.setItem('user_data', JSON.stringify(mockUser));
-        
-        setUser(mockUser);
-        setIsAuthenticated(true);
-        resolve();
-      }, 1500);
-    });
+    try {
+      const response = await authApi.login(email, password);
+      
+      // Store token
+      localStorage.setItem('auth_token', response.token);
+      
+      // Set user data
+      const userData = response.user;
+      const fullUser: User = {
+        id: userData.id,
+        name: userData.name,
+        email: userData.email,
+        role: userData.role,
+        department: userData.department,
+        // Set default values for missing fields
+        firstName: userData.name.split(' ')[0] || '',
+        lastName: userData.name.split(' ')[1] || '',
+        phone: '',
+        bio: `${userData.role} at ${userData.department || 'BizDash'}`
+      };
+      
+      localStorage.setItem('user_data', JSON.stringify(fullUser));
+      setUser(fullUser);
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error('Login failed:', error);
+      throw new Error(error instanceof Error ? error.message : 'Login failed');
+    }
+  };
+
+  const register = async (name: string, email: string, password: string, department?: string): Promise<void> => {
+    try {
+      const response = await authApi.register(name, email, password, department);
+      
+      // Store token
+      localStorage.setItem('auth_token', response.token);
+      
+      // Set user data
+      const userData = response.user;
+      const fullUser: User = {
+        id: userData.id,
+        name: userData.name,
+        email: userData.email,
+        role: userData.role,
+        department: userData.department,
+        // Set default values for missing fields
+        firstName: userData.name.split(' ')[0] || '',
+        lastName: userData.name.split(' ')[1] || '',
+        phone: '',
+        bio: `${userData.role} at ${userData.department || 'BizDash'}`
+      };
+      
+      localStorage.setItem('user_data', JSON.stringify(fullUser));
+      setUser(fullUser);
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error('Registration failed:', error);
+      throw new Error(error instanceof Error ? error.message : 'Registration failed');
+    }
   };
 
   const logout = () => {
@@ -99,6 +155,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     user,
     isAuthenticated,
     login,
+    register,
     logout,
     updateProfile,
   };

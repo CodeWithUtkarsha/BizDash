@@ -1,10 +1,38 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CursorGlow } from '@/components/ui/background-effects';
 import { TrendingUp, TrendingDown } from 'lucide-react';
-import { topPerformers } from '@/data/mockData';
+import { dashboardApi } from '@/services/api';
+
+interface Performer {
+  id: string;
+  name: string;
+  rank: number;
+  revenue: number;
+  orders: number;
+  change: number;
+}
 
 export const TopPerformers = () => {
+  const [performers, setPerformers] = useState<Performer[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadTopPerformers = async () => {
+      try {
+        const response = await dashboardApi.getTopPerformers();
+        setPerformers(response.topPerformers);
+      } catch (error) {
+        console.error('Failed to load top performers:', error);
+        setPerformers([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadTopPerformers();
+  }, []);
   const getRankColor = (rank: number) => {
     const colors = {
       1: 'from-yellow-400 to-yellow-500',
@@ -27,7 +55,16 @@ export const TopPerformers = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {topPerformers.map((performer, index) => (
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="text-gray-400">Loading performers...</div>
+              </div>
+            ) : performers.length === 0 ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="text-gray-400">No performers data</div>
+              </div>
+            ) : (
+              performers.map((performer, index) => (
               <motion.div
                 key={performer.id}
                 data-testid={`performer-item-${performer.id}`}
@@ -55,7 +92,7 @@ export const TopPerformers = () => {
                       data-testid={`text-performer-value-${performer.id}`}
                       className="text-gray-400 text-sm"
                     >
-                      {performer.value}
+                      ${performer.revenue.toLocaleString()} ({performer.orders} orders)
                     </p>
                   </div>
                 </div>
@@ -63,19 +100,20 @@ export const TopPerformers = () => {
                   <p 
                     data-testid={`text-performer-change-${performer.id}`}
                     className={`text-sm font-medium flex items-center ${
-                      performer.trend === 'up' ? 'text-green-400' : 'text-red-400'
+                      performer.change >= 0 ? 'text-green-400' : 'text-red-400'
                     }`}
                   >
-                    {performer.trend === 'up' ? (
+                    {performer.change >= 0 ? (
                       <TrendingUp className="w-4 h-4 mr-1" />
                     ) : (
                       <TrendingDown className="w-4 h-4 mr-1" />
                     )}
-                    {performer.change > 0 ? '+' : ''}{performer.change}%
+                    {performer.change > 0 ? '+' : ''}{performer.change.toFixed(1)}%
                   </p>
                 </div>
               </motion.div>
-            ))}
+              ))
+            )}
           </div>
         </CardContent>
       </Card>

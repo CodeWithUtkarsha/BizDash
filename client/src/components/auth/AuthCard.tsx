@@ -17,20 +17,42 @@ export const AuthCard = ({ onSuccess }: AuthCardProps) => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [department, setDepartment] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const { login } = useAuth();
+  const [error, setError] = useState('');
+  
+  const { login, register } = useAuth();
+  
+  const toggleAuthMode = () => {
+    setIsLogin(!isLogin);
+    setError('');
+    setEmail('');
+    setPassword('');
+    setName('');
+    setDepartment('');
+    setShowPassword(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError('');
     
     try {
-      await login(email, password);
-      onSuccess();
-    } catch (error) {
-      console.error('Login failed:', error);
+      if (isLogin) {
+        await login(email, password);
+        onSuccess();
+      } else {
+        // Register new user
+        await register(name, email, password, department);
+        onSuccess();
+      }
+    } catch (error: any) {
+      console.error('Authentication failed:', error);
+      setError(error.message || 'Authentication failed');
     } finally {
       setIsLoading(false);
     }
@@ -65,6 +87,28 @@ export const AuthCard = ({ onSuccess }: AuthCardProps) => {
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-6">
+              {error && (
+                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                  {error}
+                </div>
+              )}
+              
+              {!isLogin && (
+                <div>
+                  <Label className="block text-sm font-medium text-gray-300 mb-2">
+                    Full Name
+                  </Label>
+                  <Input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all text-white placeholder:text-gray-500"
+                    placeholder="Enter your full name"
+                    required
+                  />
+                </div>
+              )}
+
               <div>
                 <Label className="block text-sm font-medium text-gray-300 mb-2">
                   Email
@@ -79,6 +123,21 @@ export const AuthCard = ({ onSuccess }: AuthCardProps) => {
                   required
                 />
               </div>
+
+              {!isLogin && (
+                <div>
+                  <Label className="block text-sm font-medium text-gray-300 mb-2">
+                    Department
+                  </Label>
+                  <Input
+                    type="text"
+                    value={department}
+                    onChange={(e) => setDepartment(e.target.value)}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all text-white placeholder:text-gray-500"
+                    placeholder="Enter your department (optional)"
+                  />
+                </div>
+              )}
 
               <div>
                 <Label className="block text-sm font-medium text-gray-300 mb-2">
@@ -133,7 +192,7 @@ export const AuthCard = ({ onSuccess }: AuthCardProps) => {
                 disabled={isLoading}
                 className="w-full btn-primary py-3 text-lg font-medium focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-gray-900"
               >
-                {isLoading ? 'Signing in...' : isLogin ? 'Sign In' : 'Sign Up'}
+                {isLoading ? (isLogin ? 'Signing in...' : 'Creating account...') : (isLogin ? 'Sign In' : 'Sign Up')}
               </Button>
             </form>
 
@@ -143,7 +202,7 @@ export const AuthCard = ({ onSuccess }: AuthCardProps) => {
                 {isLogin ? "Don't have an account?" : "Already have an account?"}{' '}
                 <button
                   type="button"
-                  onClick={() => setIsLogin(!isLogin)}
+                  onClick={toggleAuthMode}
                   className="text-cyan-400 hover:text-cyan-300 transition-colors ml-1 font-medium"
                 >
                   {isLogin ? 'Sign up' : 'Sign in'}
