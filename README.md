@@ -9,7 +9,6 @@ A modern, responsive business analytics dashboard built with React, TypeScript, 
 
 🔗 **[View Live Demo](https://biz-dash.vercel.app/)** _(Production Deployment)_
 
-🛠️ **[Local Development](http://localhost:5173)** _(Run locally)_
 
 > **Demo Credentials:**
 >
